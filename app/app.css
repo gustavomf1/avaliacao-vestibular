@@ -1,0 +1,35 @@
+.wrap{max-width:var(--content-max);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font:500 12px/16px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.t-display{font:600 26px/32px var(--font-display);color:var(--ink);margin:6px 0 0}
+.t-small{font-size:14px;line-height:20px;color:var(--ink-muted);margin:0}
+.t-caption{font-size:12.5px;line-height:18px;color:var(--ink-muted);margin:0}
+
+.login{min-height:100dvh;display:grid;place-items:center;padding:24px 16px}
+.login-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:24px;display:flex;flex-direction:column;gap:16px}
+.login-card .vc-btn{width:100%}
+.login-erro{background:var(--bad-soft);color:var(--bad);border-radius:var(--radius-md);padding:10px 12px;font-size:14px;font-weight:700;margin:0}
+
+.topo{padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.topo-linha{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.usuario{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink-muted);min-width:0}
+.usuario b{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40vw}
+
+.acoes{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 16px}
+.filtros{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;margin-bottom:16px}
+@media (max-width:640px){.filtros{grid-template-columns:minmax(0,1fr)}.acoes .vc-btn{flex:1 1 auto}}
+.contagem{font-size:13px;color:var(--ink-muted);margin:0 0 10px}
+.lista{display:flex;flex-direction:column;gap:12px;padding:0;margin:0 0 48px;list-style:none}
+.vc-record{min-width:0}
+.vc-record-name{overflow-wrap:anywhere}
+.vc-record-meta b{color:var(--ink);font-weight:700}
+.vc-record-actions{flex-wrap:wrap}
+.vc-record-actions a{text-decoration:none}
+@media (max-width:640px){.vc-record-actions .vc-btn{flex:1 1 auto}}
+.confirmar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--bad-soft);color:var(--bad);border-radius:var(--radius-md);padding:10px 12px;font-size:14px;font-weight:700}
+.confirmar div{display:flex;gap:8px}
+.vazio{background:var(--surface);border:1px dashed var(--line-control);border-radius:var(--radius-lg);padding:28px 20px;text-align:center;color:var(--ink-muted)}
+.aviso{background:var(--warn-soft);color:var(--warn);border-radius:var(--radius-md);padding:10px 12px;font-size:14px;margin:0 0 12px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:var(--radius-pill);font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+a.vc-btn{text-decoration:none}
