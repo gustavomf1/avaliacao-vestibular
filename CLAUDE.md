@@ -39,6 +39,12 @@ npm run dev                     # http://localhost:3000
 | `app/api/backup` | Baixa `backup-avaliacoes-AAAA-MM-DD.json` com **todas** as avaliações. Qualquer usuário logado pode gerar. Data e `gerado_em` no horário de Brasília. |
 | `app/page.tsx` + `Lista.tsx` | Listagem (primeira tela): busca por paciente, filtro por avaliador, Abrir, Excluir com confirmação no cartão, backup. |
 | `app/login` | Tela de login. |
+| `app/relatorios` | Tela **Relatórios** (botão na listagem): download da planilha e Tabelas 1–3 no formato de artigo, cada uma com "Copiar tabela" (HTML pronto para colar no Word) e "Como esta tabela foi calculada". |
+| `app/api/relatorios/planilha` | Baixa `dados-pesquisa-AAAA-MM-DD.xlsx` (abas: Variáveis e escores, Dicionário, Tabela 1–3, Respostas brutas). Sem nome, nascimento, endereço, telefone, acompanhante, profissão e data. |
+| `app/api/relatorios/tabela/[n]` | Baixa `tabela-N.xlsx` só com a Tabela N (botão "Baixar Excel" em cada tabela). |
+| `lib/relatorios.ts` | Converte cada avaliação em `Paciente` (códigos P01... pela ordem de `criado_em`), monta as tabelas e os textos explicativos. Lista de preditores da Tabela 3 em `PREDITORES`. |
+| `lib/colunas.ts` | Colunas da aba de análise (com descrição, usada no Dicionário e na tela) e o guia das colunas brutas. |
+| `lib/estatistica.ts` | Média, DP e regressão logística (Newton-Raphson, IC e p de Wald). Conferida contra statsmodels: diferença < 1e-7. |
 | `db/schema.sql` | Tabelas `usuarios` e `avaliacoes` (id uuid, `respostas` jsonb). |
 | `scripts/` | `migrar.mjs` e `criar-usuario.mjs`. |
 
@@ -151,11 +157,16 @@ Ao esconder, os valores **não** são apagados (decisão para não perder dados 
 3. Importar o repositório na Vercel e definir `DATABASE_URL` e `SESSION_SECRET` (nova, `openssl rand -hex 32`) em Environment Variables.
 4. São dados de saúde: usar só o domínio HTTPS da Vercel, não logar `respostas`, não compartilhar backups por canais abertos.
 
+## Relatórios: decisões
+
+- Escore só entra nas tabelas se o instrumento estiver completo (10-CS `completo`, IPAQ com classificação, EVA 9 itens, DHI 25 e aplicável, MiniBEST 14 itens). Parcial vira vazio.
+- Tabela 3 usa regressão logística (desfecho: pelo menos uma queda nos últimos 6 meses), não Cox, porque a ficha não tem acompanhamento no tempo. Colunas: não ajustada e ajustada por idade e sexo.
+- Modelo só é calculado com pelo menos `MIN_EVENTOS_POR_PREDITOR` (5) participantes com e sem queda por variável; separação ou não convergência vira "não estimável". Nunca mostrar número de modelo instável.
+- IPAQ na Tabela 3: Ativo/Muito ativo x demais.
+- Celular: tabelas de 4 colunas cabem em 390px; a Tabela 3 (`artigo--empilha`) vira um bloco por variável com rótulos de `data-rotulo`.
+- Em 12/11/2026 a produção tinha 5 avaliações (2 com queda): Tabela 3 ainda mostra "n insuficiente".
+
 ## Pendências
 
 - Importar backup (ler o JSON, validar `versao_formato`, recriar avaliações).
 - Cadastro de usuários pela interface, se for preciso (hoje só pelo script).
-
-## Depois disso
-
-- Gerar planilha Excel com todas as respostas (campos não marcados contam como "ausente"/"N"), a partir do mesmo formato do backup.

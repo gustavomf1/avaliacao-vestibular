@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ItemLista } from '@/lib/avaliacoes';
 import type { Sessao } from '@/lib/sessao';
@@ -87,6 +88,7 @@ export default function Lista({ usuario, itensIniciais }: { usuario: Sessao; ite
       <main className="wrap">
         <div className="acoes">
           <a className="vc-btn vc-btn--primary" href="/avaliacao">Nova avaliação</a>
+          <Link className="vc-btn" href="/relatorios">Relatórios</Link>
           <a className="vc-btn" href="/api/backup" download>Gerar backup (JSON)</a>
         </div>
 
