@@ -161,3 +161,8 @@ a.vc-btn{text-decoration:none}
 .hoje-part{font-size:13px;line-height:18px;color:var(--ink-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hoje-fim{font-size:13px;line-height:18px;color:var(--ink-muted);margin:8px 0 0}
 .hoje-mais{color:var(--accent);font-weight:700;text-decoration:none;display:inline-flex;align-items:center;min-height:44px}.hoje-fim:has(.hoje-mais){margin-top:2px}
+.ag-hora-campo{border:0;margin:0;padding:0;min-width:0}
+.ag-hora-campo legend{padding:0;margin-bottom:6px}
+.ag-hora-sel{display:flex;align-items:center;gap:4px}
+.ag-hora-sel select{flex:1 1 0;min-width:0;font-family:var(--font-mono);text-align:center}
+.ag-hora-sel span{font:600 18px/1 var(--font-mono);color:var(--ink-muted)}

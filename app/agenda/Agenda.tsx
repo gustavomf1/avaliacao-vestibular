@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Evento } from '@/lib/eventos';
 import { colunas, faixaHoras, minutos } from '@/lib/agenda-layout';
+import { HORAS, brParaIso, fimAoMudarInicio, isoParaBr, mascaraData, opcoesMinuto } from '@/lib/datas-br';
 import { DESCRICAO_MAX, PARTICIPANTE_MAX, PARTICIPANTES_QTD_MAX, TITULO_MAX } from '@/lib/eventos-validar';
 
 const HORA_PX = 56;
@@ -30,10 +31,6 @@ const semAssinatura = () => () => {};
 type Rascunho = { titulo: string; participantes: string[]; descricao: string; dia: string; inicio: string; fim: string };
 type Painel = { evento: Evento | null; dados: Rascunho };
 
-function maisUmaHora(h: string) {
-  const m = Math.min(minutos(h) + 60, 23 * 60 + 59);
-  return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
-}
 
 type Props = { usuario: string; diaInicial: string | null; eventoInicial: string | null };
 
@@ -132,15 +129,16 @@ export default function Agenda({ usuario, diaInicial, eventoInicial }: Props) {
   function abrirNovo(inicio = '08:00') {
     if (!sel) return;
     setErro(''); setConfirmando(false); setFocarNovo(false);
-    setPainel({ evento: null, dados: { titulo: '', participantes: [], descricao: '', dia: sel, inicio, fim: maisUmaHora(inicio) } });
+    setPainel({ evento: null, dados: { titulo: '', participantes: [], descricao: '', dia: isoParaBr(sel), inicio, fim: fimAoMudarInicio('00:00', '01:00', inicio) } });
   }
 
   function abrirEvento(e: Evento) {
     setErro(''); setConfirmando(false); setFocarNovo(false);
-    setPainel({ evento: e, dados: { titulo: e.titulo, participantes: [...e.participantes], descricao: e.descricao, dia: e.dia, inicio: e.inicio, fim: e.fim } });
+    setPainel({ evento: e, dados: { titulo: e.titulo, participantes: [...e.participantes], descricao: e.descricao, dia: isoParaBr(e.dia), inicio: e.inicio, fim: e.fim } });
   }
 
   function campo<K extends keyof Rascunho>(k: K, v: Rascunho[K]) {
+    setErro('');
     setPainel(p => (p ? { ...p, dados: { ...p.dados, [k]: v } } : p));
   }
 
@@ -159,14 +157,15 @@ export default function Agenda({ usuario, diaInicial, eventoInicial }: Props) {
     if (!painel) return;
     const d = painel.dados;
     if (!d.titulo.trim()) { setErro('Informe o título do evento.'); return; }
-    if (!d.dia || !d.inicio || !d.fim) { setErro('Informe dia, início e fim.'); return; }
+    const dia = brParaIso(d.dia);
+    if (!dia) { setErro('Informe o dia no formato DD/MM/AAAA.'); return; }
     if (d.fim <= d.inicio) { setErro('A hora de fim precisa ser depois da hora de início.'); return; }
     setSalvando(true); setErro('');
     try {
       const r = await fetch(painel.evento ? `/api/eventos/${painel.evento.id}` : '/api/eventos', {
         method: painel.evento ? 'PUT' : 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(d),
+        body: JSON.stringify({ ...d, dia }),
       });
       if (r.status === 401) { sair401(); return; }
       const corpo = await r.json().catch(() => ({}));
@@ -329,18 +328,13 @@ export default function Agenda({ usuario, diaInicial, eventoInicial }: Props) {
             </label>
             <label className="vc-field">
               <span className="vc-label">Dia *</span>
-              <input className="vc-input" type="date" value={painel.dados.dia} onChange={e => campo('dia', e.target.value)} required />
+              <input className="vc-input" type="text" inputMode="numeric" autoComplete="off" placeholder="DD/MM/AAAA" maxLength={10}
+                value={painel.dados.dia} onChange={e => campo('dia', mascaraData(e.target.value))} />
             </label>
             <div className="ag-horas">
-              <label className="vc-field">
-                <span className="vc-label">Início *</span>
-                <input className="vc-input" type="time" step={300} value={painel.dados.inicio}
-                  onChange={e => { const v = e.target.value; setPainel(p => p && { ...p, dados: { ...p.dados, inicio: v, fim: p.dados.fim > v ? p.dados.fim : maisUmaHora(v) } }); }} required />
-              </label>
-              <label className="vc-field">
-                <span className="vc-label">Fim *</span>
-                <input className="vc-input" type="time" step={300} value={painel.dados.fim} onChange={e => campo('fim', e.target.value)} required />
-              </label>
+              <CampoHora rotulo="Início" valor={painel.dados.inicio}
+                mudar={v => { setErro(''); setPainel(p => p && { ...p, dados: { ...p.dados, inicio: v, fim: fimAoMudarInicio(p.dados.inicio, p.dados.fim, v) } }); }} />
+              <CampoHora rotulo="Fim" valor={painel.dados.fim} mudar={v => campo('fim', v)} />
             </div>
             {erro && <p className="login-erro" role="alert">{erro}</p>}
             <div className="ag-form-acoes">
@@ -364,6 +358,25 @@ export default function Agenda({ usuario, diaInicial, eventoInicial }: Props) {
       )}
       <div className={`toast${msg ? ' show' : ''}`} role="status">{msg}</div>
     </>
+  );
+}
+
+/** Hora em 24 h (00–23) e minutos de 5 em 5, sempre no padrão brasileiro. */
+function CampoHora({ rotulo, valor, mudar }: { rotulo: string; valor: string; mudar: (v: string) => void }) {
+  const [h, m] = [valor.slice(0, 2), valor.slice(3, 5)];
+  return (
+    <fieldset className="ag-hora-campo">
+      <legend className="vc-label">{rotulo} *</legend>
+      <div className="ag-hora-sel">
+        <select className="vc-input" value={h} onChange={e => mudar(`${e.target.value}:${m}`)} aria-label={`${rotulo}: hora`}>
+          {HORAS.map(x => <option key={x} value={x}>{x}</option>)}
+        </select>
+        <span aria-hidden>:</span>
+        <select className="vc-input" value={m} onChange={e => mudar(`${h}:${e.target.value}`)} aria-label={`${rotulo}: minutos`}>
+          {opcoesMinuto(m).map(x => <option key={x} value={x}>{x}</option>)}
+        </select>
+      </div>
+    </fieldset>
   );
 }
 
