@@ -44,8 +44,12 @@ npm run dev                     # http://localhost:3000
 | `app/api/relatorios/tabela/[n]` | Baixa `tabela-N.xlsx` só com a Tabela N (botão "Baixar Excel" em cada tabela). |
 | `lib/relatorios.ts` | Converte cada avaliação em `Paciente` (códigos P01... pela ordem de `criado_em`), monta as tabelas e os textos explicativos. Lista de preditores da Tabela 3 em `PREDITORES`. |
 | `lib/colunas.ts` | Colunas da aba de análise (com descrição, usada no Dicionário e na tela) e o guia das colunas brutas. |
+| `app/agenda` | Tela **Agenda** (botão na listagem): mês + linha do tempo do dia. Eventos no mesmo horário ficam lado a lado. Formulário em painel (tela cheia no celular, lateral a partir de 900px). |
+| `app/api/eventos` | `GET ?de=&ate=` (até 62 dias), `POST`. `[id]`: `GET`, `PUT`, `DELETE`. Autor e `atualizado_por` vêm da sessão. |
+| `lib/eventos.ts` + `lib/eventos-validar.ts` | Consultas e validação dos eventos (título até 120, participantes até 500, fim depois do início, mesmo dia). A validação é pura para rodar no `npm test`. |
+| `lib/agenda-layout.ts` | `colunas()` (eventos sobrepostos em colunas; encostar não é sobrepor) e `faixaHoras()` (7h às 19h, estende para caber os eventos). |
 | `lib/estatistica.ts` | Média, DP e regressão logística (Newton-Raphson, IC e p de Wald). Conferida contra statsmodels: diferença < 1e-7. |
-| `db/schema.sql` | Tabelas `usuarios` e `avaliacoes` (id uuid, `respostas` jsonb). |
+| `db/schema.sql` | Tabelas `usuarios`, `avaliacoes` (id uuid, `respostas` jsonb) e `eventos` (`dia` date, `inicio`/`fim` time, sem fuso). |
 | `scripts/` | `migrar.mjs` e `criar-usuario.mjs`. |
 
 ### Salvar na ficha
@@ -156,6 +160,14 @@ Ao esconder, os valores **não** são apagados (decisão para não perder dados 
 2. Rodar localmente com essa URL: `DATABASE_URL=… node scripts/migrar.mjs` e criar as avaliadoras com `scripts/criar-usuario.mjs`.
 3. Importar o repositório na Vercel e definir `DATABASE_URL` e `SESSION_SECRET` (nova, `openssl rand -hex 32`) em Environment Variables.
 4. São dados de saúde: usar só o domínio HTTPS da Vercel, não logar `respostas`, não compartilhar backups por canais abertos.
+
+## Agenda: decisões
+
+- Compartilhada: todo usuário logado vê, cria, edita e exclui qualquer evento (mesma regra das avaliações). O formulário mostra "Criado por" e "editado por".
+- Horários sobrepostos são permitidos; nunca bloquear.
+- `dia` + `time` sem fuso: o horário digitado é o mostrado. "Hoje" usa a data do aparelho (renderizado só no cliente).
+- Sem lembretes, recorrência ou eventos que passam da meia-noite.
+- Testes das funções puras: `npm test` (`node --test`, por isso `allowImportingTsExtensions` no tsconfig).
 
 ## Relatórios: decisões
 
