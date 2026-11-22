@@ -35,11 +35,13 @@ function maisUmaHora(h: string) {
   return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
 }
 
-export default function Agenda({ usuario }: { usuario: string }) {
+type Props = { usuario: string; diaInicial: string | null; eventoInicial: string | null };
+
+export default function Agenda({ usuario, diaInicial, eventoInicial }: Props) {
   const router = useRouter();
   // Servidor não sabe a data do aparelho: renderiza vazio e o cliente preenche.
   const hoje = useSyncExternalStore(semAssinatura, hojeLocal, () => null);
-  const [selEscolhido, setSel] = useState<string | null>(null);
+  const [selEscolhido, setSel] = useState<string | null>(diaInicial);
   const [mesEscolhido, setMes] = useState<string | null>(null); // AAAA-MM
   const sel = selEscolhido ?? hoje;
   const mes = mesEscolhido ?? sel?.slice(0, 7) ?? null;
@@ -55,6 +57,7 @@ export default function Agenda({ usuario }: { usuario: string }) {
   const [focarNovo, setFocarNovo] = useState(false);
   const [msg, setMsg] = useState('');
   const toastT = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const abriuInicial = useRef(false);
 
   const sair401 = useCallback(() => router.replace('/login?voltar=/agenda'), [router]);
 
@@ -70,12 +73,18 @@ export default function Agenda({ usuario }: { usuario: string }) {
         if (r.status === 401) { sair401(); return; }
         if (!r.ok) throw new Error();
         const lista: Evento[] = await r.json();
-        if (vivo) { setEventos(lista); setErroLista(''); }
+        if (!vivo) return;
+        setEventos(lista);
+        setErroLista('');
+        // Vindo do cartão "Hoje na agenda": abre o evento uma vez.
+        const alvo = !abriuInicial.current && eventoInicial ? lista.find(e => e.id === eventoInicial) : undefined;
+        abriuInicial.current = true;
+        if (alvo) abrirEvento(alvo);
       })
       .catch(() => { if (vivo) setErroLista('Não foi possível carregar a agenda. Verifique a conexão.'); })
       .finally(() => { if (vivo) setCarregando(false); });
     return () => { vivo = false; };
-  }, [mes, recarregar, sair401]);
+  }, [mes, recarregar, sair401, eventoInicial]);
 
   useEffect(() => {
     if (!painel) return;
