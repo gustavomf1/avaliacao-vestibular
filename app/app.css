@@ -83,3 +83,81 @@ a.vc-btn{text-decoration:none}
 }
 .rel-botoes{display:flex;gap:8px;flex-wrap:wrap}
 @media (max-width:640px){.rel-botoes{width:100%}.rel-botoes .vc-btn{flex:1 1 auto}}
+
+/* Agenda */
+.ag-wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ag{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding-top:20px;padding-bottom:48px}
+@media (min-width:900px){.ag{grid-template-columns:340px minmax(0,1fr);align-items:start}.ag-mes{position:sticky;top:16px}}
+.ag-mes,.ag-dia-painel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px;min-width:0}
+.ag-h2{font:600 19px/26px var(--font-display);color:var(--ink);margin:0}
+.ag-ano,.ag-num{font-family:var(--font-mono);font-weight:500}
+.ag-mes-topo,.ag-dia-topo{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.ag-dia-titulo{text-align:center;min-width:0}
+.ag-seta{min-width:44px;font-size:22px;line-height:1}
+.ag-grade{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.ag-sem{font:500 12px/16px var(--font-mono);color:var(--ink-muted);text-align:center;padding:4px 0}
+.ag-dia{position:relative;min-height:44px;border:1px solid transparent;border-radius:var(--radius-md);background:none;font:500 15px/20px var(--font-mono);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.ag-dia:hover{background:var(--surface-subtle)}
+.ag-dia--fora{color:var(--line-control)}
+.ag-dia--hoje{border-color:var(--accent);font-weight:700}
+.ag-dia--sel{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.ag-dia--sel:hover{background:var(--accent-hover)}
+.ag-ponto{position:absolute;bottom:5px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--accent)}
+.ag-dia--sel .ag-ponto{background:var(--on-accent)}
+.ag-hoje{margin-top:12px;width:100%}
+.ag-aviso{margin-top:12px;display:flex;flex-direction:column;gap:8px;background:var(--warn-soft);color:var(--warn);border-radius:var(--radius-md);padding:10px 12px;font-size:14px;font-weight:700}
+.ag-novo{width:100%;margin-bottom:16px}
+.ag-linha{position:relative}
+.ag-hora{position:absolute;left:0;right:0;display:flex;align-items:flex-start;border:0;border-top:1px solid var(--line);background:none;padding:0;text-align:left;cursor:pointer}
+.ag-hora:hover{background:var(--surface-subtle)}
+.ag-hora span{display:block;width:48px;font:500 12px/16px var(--font-mono);color:var(--ink-muted);padding-top:2px}
+.ag-trilho{position:absolute;top:0;bottom:0;left:52px;right:0;pointer-events:none}
+.ag-ev{position:absolute;pointer-events:auto;display:flex;flex-direction:column;gap:1px;text-align:left;overflow:hidden;background:var(--surface-accent);border:1px solid var(--accent);border-left-width:4px;border-radius:var(--radius-sm);padding:4px 6px;color:var(--ink);cursor:pointer;font:inherit;min-width:0}
+.ag-ev:hover{background:var(--surface-subtle)}
+.ag-ev-hora{font:500 12px/16px var(--font-mono);color:var(--accent-hover)}
+.ag-ev-titulo{font-size:14px;line-height:18px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag-ev-part{font-size:13px;line-height:17px;color:var(--ink-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag-ev-l1{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ag-ev--curto,.ag-ev--medio{padding-top:2px;padding-bottom:2px}
+.ag-ev--curto{justify-content:center}
+.ag-ev--curto .ag-ev-l1,.ag-ev--medio .ag-ev-l1{flex-direction:row;align-items:baseline;gap:6px}
+.ag-ev--curto .ag-ev-hora,.ag-ev--medio .ag-ev-hora{flex:none}
+.ag-fundo{position:fixed;inset:0;z-index:50;background:rgba(27,46,48,.35);display:flex;justify-content:flex-end}
+.ag-form{background:var(--surface);width:100%;height:100%;overflow-y:auto;padding:max(20px,env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+@media (min-width:900px){.ag-form{width:440px;border-left:1px solid var(--line);padding:24px}}
+.ag-form-topo{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ag-textarea{resize:vertical;min-height:80px}
+.ag-horas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.ag-form-acoes{display:flex;gap:10px}
+.ag-form-acoes .vc-btn{flex:1 1 0}
+.ag-excluir{align-self:flex-start;color:var(--bad)}
+.ag-ev:not(.ag-ev--curto):not(.ag-ev--medio) .ag-ev-titulo{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ag-part{border:0;margin:0;padding:0;min-width:0;display:flex;flex-direction:column;gap:8px}
+.ag-part legend{padding:0;margin-bottom:6px}
+.ag-part-linha{display:flex;gap:6px;align-items:center}
+.ag-part-linha .vc-input{flex:1 1 auto;min-width:0}
+.ag-eu{flex:none;min-width:48px}
+.ag-remover{flex:none;min-width:44px;font-size:22px;line-height:1}
+.ag-add{align-self:flex-start}
+.ag-opc{font-weight:400;color:var(--ink-muted)}
+
+/* Hoje na agenda (listagem) */
+.hoje{background:var(--surface-accent);border:1px solid var(--accent);border-left-width:4px;border-radius:var(--radius-lg);padding:12px 16px;margin:0 0 16px}
+.hoje-topo{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hoje-titulo{font:500 12px/16px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-hover)}
+.hoje-ver{font-size:14px;font-weight:700;color:var(--accent);text-decoration:none;min-height:44px;display:flex;align-items:center}
+.hoje-ver:hover{text-decoration:underline}
+.hoje-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.hoje-ev{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:8px 10px;border-radius:var(--radius-md);background:var(--surface);border:1px solid var(--line);color:var(--ink);text-decoration:none}
+.hoje-ev:hover{border-color:var(--accent)}
+.hoje-quando{flex:none;min-width:76px;text-align:center;font:500 12.5px/18px var(--font-mono);border-radius:var(--radius-pill);padding:2px 8px;border:1px solid var(--line-control);color:var(--ink-muted)}
+.hoje-ev--logo .hoje-quando{border-color:var(--accent);color:var(--accent-hover)}
+.hoje-ev--agora .hoje-quando{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+.hoje-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto}
+.hoje-linha{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px;row-gap:2px;min-width:0}
+.hoje-hora{font:500 13px/18px var(--font-mono);color:var(--ink-muted)}
+.hoje-nome{font-size:15px;line-height:20px;overflow-wrap:anywhere}
+.hoje-voce{font-size:12.5px;line-height:18px;font-weight:700;color:var(--accent-hover);background:var(--surface-accent);border-radius:var(--radius-pill);padding:0 8px}
+.hoje-part{font-size:13px;line-height:18px;color:var(--ink-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hoje-fim{font-size:13px;line-height:18px;color:var(--ink-muted);margin:8px 0 0}
+.hoje-mais{color:var(--accent);font-weight:700;text-decoration:none;display:inline-flex;align-items:center;min-height:44px}.hoje-fim:has(.hoje-mais){margin-top:2px}

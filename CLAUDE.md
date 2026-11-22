@@ -38,14 +38,19 @@ npm run dev                     # http://localhost:3000
 | `app/api/avaliacoes` | `GET` lista (sem `respostas`), `POST` cria. `[id]`: `GET`, `PUT`, `DELETE`. Autor e `atualizado_por` vêm da sessão, nunca do corpo. |
 | `app/api/backup` | Baixa `backup-avaliacoes-AAAA-MM-DD.json` com **todas** as avaliações. Qualquer usuário logado pode gerar. Data e `gerado_em` no horário de Brasília. |
 | `app/page.tsx` + `Lista.tsx` | Listagem (primeira tela): busca por paciente, filtro por avaliador, Abrir, Excluir com confirmação no cartão, backup. |
+| `app/HojeNaAgenda.tsx` + `lib/agenda-hoje.ts` | Cartão "Hoje na agenda" na listagem: só aparece se há evento hoje (data do aparelho). Mostra até 3 eventos ainda não terminados com etiqueta **Agora** / **em X min** / **em 2h55**, "Você está" quando o nome de quem está logado está nos participantes (sem acento/maiúsculas), "+ N mais tarde" e quantos já terminaram. Atualiza a cada 30 s. Tocar abre `/agenda?dia=…&evento=…`. |
 | `app/login` | Tela de login. |
 | `app/relatorios` | Tela **Relatórios** (botão na listagem): download da planilha e Tabelas 1–3 no formato de artigo, cada uma com "Copiar tabela" (HTML pronto para colar no Word) e "Como esta tabela foi calculada". |
 | `app/api/relatorios/planilha` | Baixa `dados-pesquisa-AAAA-MM-DD.xlsx` (abas: Variáveis e escores, Dicionário, Tabela 1–3, Respostas brutas). Sem nome, nascimento, endereço, telefone, acompanhante, profissão e data. |
 | `app/api/relatorios/tabela/[n]` | Baixa `tabela-N.xlsx` só com a Tabela N (botão "Baixar Excel" em cada tabela). |
 | `lib/relatorios.ts` | Converte cada avaliação em `Paciente` (códigos P01... pela ordem de `criado_em`), monta as tabelas e os textos explicativos. Lista de preditores da Tabela 3 em `PREDITORES`. |
 | `lib/colunas.ts` | Colunas da aba de análise (com descrição, usada no Dicionário e na tela) e o guia das colunas brutas. |
+| `app/agenda` | Tela **Agenda** (botão na listagem): mês + linha do tempo do dia. Eventos no mesmo horário ficam lado a lado. Aceita `?dia=AAAA-MM-DD` e `&evento=<id>` (abre o evento). Formulário em painel (tela cheia no celular, lateral a partir de 900px): título, participantes em lista ("+ Participante", atalho **Eu** preenche com o nome de quem está logado, × remove), descrição opcional, dia, início e fim. |
+| `app/api/eventos` | `GET ?de=&ate=` (até 62 dias), `POST`. `[id]`: `GET`, `PUT`, `DELETE`. Autor e `atualizado_por` vêm da sessão. |
+| `lib/eventos.ts` + `lib/eventos-validar.ts` | Consultas e validação dos eventos (título até 120, até 30 participantes de até 80 caracteres cada, linhas vazias descartadas, descrição até 1000, fim depois do início, mesmo dia). A validação é pura para rodar no `npm test`. |
+| `lib/agenda-layout.ts` | `colunas()` (eventos sobrepostos em colunas; encostar não é sobrepor) e `faixaHoras()` (7h às 19h, estende para caber os eventos). |
 | `lib/estatistica.ts` | Média, DP e regressão logística (Newton-Raphson, IC e p de Wald). Conferida contra statsmodels: diferença < 1e-7. |
-| `db/schema.sql` | Tabelas `usuarios` e `avaliacoes` (id uuid, `respostas` jsonb). |
+| `db/schema.sql` | Tabelas `usuarios`, `avaliacoes` (id uuid, `respostas` jsonb) e `eventos` (`participantes` text[], `descricao`, `dia` date, `inicio`/`fim` time, sem fuso). O fim do schema converte bancos antigos em que `participantes` era texto. |
 | `scripts/` | `migrar.mjs` e `criar-usuario.mjs`. |
 
 ### Salvar na ficha
@@ -156,6 +161,14 @@ Ao esconder, os valores **não** são apagados (decisão para não perder dados 
 2. Rodar localmente com essa URL: `DATABASE_URL=… node scripts/migrar.mjs` e criar as avaliadoras com `scripts/criar-usuario.mjs`.
 3. Importar o repositório na Vercel e definir `DATABASE_URL` e `SESSION_SECRET` (nova, `openssl rand -hex 32`) em Environment Variables.
 4. São dados de saúde: usar só o domínio HTTPS da Vercel, não logar `respostas`, não compartilhar backups por canais abertos.
+
+## Agenda: decisões
+
+- Compartilhada: todo usuário logado vê, cria, edita e exclui qualquer evento (mesma regra das avaliações). O formulário mostra "Criado por" e "editado por".
+- Horários sobrepostos são permitidos; nunca bloquear.
+- `dia` + `time` sem fuso: o horário digitado é o mostrado. "Hoje" usa a data do aparelho (renderizado só no cliente).
+- Sem lembretes, recorrência ou eventos que passam da meia-noite.
+- Testes das funções puras: `npm test` (`node --test`, por isso `allowImportingTsExtensions` no tsconfig).
 
 ## Relatórios: decisões
 
