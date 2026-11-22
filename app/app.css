@@ -132,3 +132,11 @@ a.vc-btn{text-decoration:none}
 .ag-form-acoes .vc-btn{flex:1 1 0}
 .ag-excluir{align-self:flex-start;color:var(--bad)}
 .ag-ev:not(.ag-ev--curto):not(.ag-ev--medio) .ag-ev-titulo{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ag-part{border:0;margin:0;padding:0;min-width:0;display:flex;flex-direction:column;gap:8px}
+.ag-part legend{padding:0;margin-bottom:6px}
+.ag-part-linha{display:flex;gap:6px;align-items:center}
+.ag-part-linha .vc-input{flex:1 1 auto;min-width:0}
+.ag-eu{flex:none;min-width:48px}
+.ag-remover{flex:none;min-width:44px;font-size:22px;line-height:1}
+.ag-add{align-self:flex-start}
+.ag-opc{font-weight:400;color:var(--ink-muted)}

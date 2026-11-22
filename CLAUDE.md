@@ -44,12 +44,12 @@ npm run dev                     # http://localhost:3000
 | `app/api/relatorios/tabela/[n]` | Baixa `tabela-N.xlsx` só com a Tabela N (botão "Baixar Excel" em cada tabela). |
 | `lib/relatorios.ts` | Converte cada avaliação em `Paciente` (códigos P01... pela ordem de `criado_em`), monta as tabelas e os textos explicativos. Lista de preditores da Tabela 3 em `PREDITORES`. |
 | `lib/colunas.ts` | Colunas da aba de análise (com descrição, usada no Dicionário e na tela) e o guia das colunas brutas. |
-| `app/agenda` | Tela **Agenda** (botão na listagem): mês + linha do tempo do dia. Eventos no mesmo horário ficam lado a lado. Formulário em painel (tela cheia no celular, lateral a partir de 900px). |
+| `app/agenda` | Tela **Agenda** (botão na listagem): mês + linha do tempo do dia. Eventos no mesmo horário ficam lado a lado. Formulário em painel (tela cheia no celular, lateral a partir de 900px): título, participantes em lista ("+ Participante", atalho **Eu** preenche com o nome de quem está logado, × remove), descrição opcional, dia, início e fim. |
 | `app/api/eventos` | `GET ?de=&ate=` (até 62 dias), `POST`. `[id]`: `GET`, `PUT`, `DELETE`. Autor e `atualizado_por` vêm da sessão. |
-| `lib/eventos.ts` + `lib/eventos-validar.ts` | Consultas e validação dos eventos (título até 120, participantes até 500, fim depois do início, mesmo dia). A validação é pura para rodar no `npm test`. |
+| `lib/eventos.ts` + `lib/eventos-validar.ts` | Consultas e validação dos eventos (título até 120, até 30 participantes de até 80 caracteres cada, linhas vazias descartadas, descrição até 1000, fim depois do início, mesmo dia). A validação é pura para rodar no `npm test`. |
 | `lib/agenda-layout.ts` | `colunas()` (eventos sobrepostos em colunas; encostar não é sobrepor) e `faixaHoras()` (7h às 19h, estende para caber os eventos). |
 | `lib/estatistica.ts` | Média, DP e regressão logística (Newton-Raphson, IC e p de Wald). Conferida contra statsmodels: diferença < 1e-7. |
-| `db/schema.sql` | Tabelas `usuarios`, `avaliacoes` (id uuid, `respostas` jsonb) e `eventos` (`dia` date, `inicio`/`fim` time, sem fuso). |
+| `db/schema.sql` | Tabelas `usuarios`, `avaliacoes` (id uuid, `respostas` jsonb) e `eventos` (`participantes` text[], `descricao`, `dia` date, `inicio`/`fim` time, sem fuso). O fim do schema converte bancos antigos em que `participantes` era texto. |
 | `scripts/` | `migrar.mjs` e `criar-usuario.mjs`. |
 
 ### Salvar na ficha

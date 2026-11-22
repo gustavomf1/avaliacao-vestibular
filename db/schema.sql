@@ -27,7 +27,8 @@ create table if not exists eventos (
   id uuid primary key default gen_random_uuid(),
   autor_id integer not null references usuarios(id),
   titulo text not null,
-  participantes text not null default '',
+  participantes text[] not null default '{}',
+  descricao text not null default '',
   dia date not null,
   inicio time not null,
   fim time not null check (fim > inicio),
@@ -37,3 +38,17 @@ create table if not exists eventos (
 );
 
 create index if not exists eventos_dia on eventos (dia, inicio);
+
+-- Bancos criados antes de participantes virar lista (texto separado por vírgula).
+alter table eventos add column if not exists descricao text not null default '';
+do $$
+begin
+  if (select data_type from information_schema.columns
+       where table_name = 'eventos' and column_name = 'participantes') = 'text' then
+    alter table eventos alter column participantes drop default;
+    alter table eventos alter column participantes type text[]
+      using case when btrim(participantes) = '' then '{}'::text[]
+                 else regexp_split_to_array(btrim(participantes), '\s*,\s*') end;
+    alter table eventos alter column participantes set default '{}';
+  end if;
+end $$;

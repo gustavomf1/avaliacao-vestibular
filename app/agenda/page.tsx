@@ -7,5 +7,5 @@ export const dynamic = 'force-dynamic';
 export default async function PaginaAgenda() {
   const s = await sessaoAtual();
   if (!s) redirect('/login?voltar=/agenda');
-  return <Agenda />;
+  return <Agenda usuario={s.nome} />;
 }

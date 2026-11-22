@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Evento } from '@/lib/eventos';
 import { colunas, faixaHoras, minutos } from '@/lib/agenda-layout';
-import { PARTICIPANTES_MAX, TITULO_MAX } from '@/lib/eventos-validar';
+import { DESCRICAO_MAX, PARTICIPANTE_MAX, PARTICIPANTES_QTD_MAX, TITULO_MAX } from '@/lib/eventos-validar';
 
 const HORA_PX = 56;
 const SEMANA = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
@@ -27,7 +27,7 @@ function hojeLocal() {
 }
 const semAssinatura = () => () => {};
 
-type Rascunho = { titulo: string; participantes: string; dia: string; inicio: string; fim: string };
+type Rascunho = { titulo: string; participantes: string[]; descricao: string; dia: string; inicio: string; fim: string };
 type Painel = { evento: Evento | null; dados: Rascunho };
 
 function maisUmaHora(h: string) {
@@ -35,7 +35,7 @@ function maisUmaHora(h: string) {
   return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
 }
 
-export default function Agenda() {
+export default function Agenda({ usuario }: { usuario: string }) {
   const router = useRouter();
   // Servidor não sabe a data do aparelho: renderiza vazio e o cliente preenche.
   const hoje = useSyncExternalStore(semAssinatura, hojeLocal, () => null);
@@ -52,6 +52,7 @@ export default function Agenda() {
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  const [focarNovo, setFocarNovo] = useState(false);
   const [msg, setMsg] = useState('');
   const toastT = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -121,17 +122,27 @@ export default function Agenda() {
 
   function abrirNovo(inicio = '08:00') {
     if (!sel) return;
-    setErro(''); setConfirmando(false);
-    setPainel({ evento: null, dados: { titulo: '', participantes: '', dia: sel, inicio, fim: maisUmaHora(inicio) } });
+    setErro(''); setConfirmando(false); setFocarNovo(false);
+    setPainel({ evento: null, dados: { titulo: '', participantes: [], descricao: '', dia: sel, inicio, fim: maisUmaHora(inicio) } });
   }
 
   function abrirEvento(e: Evento) {
-    setErro(''); setConfirmando(false);
-    setPainel({ evento: e, dados: { titulo: e.titulo, participantes: e.participantes, dia: e.dia, inicio: e.inicio, fim: e.fim } });
+    setErro(''); setConfirmando(false); setFocarNovo(false);
+    setPainel({ evento: e, dados: { titulo: e.titulo, participantes: [...e.participantes], descricao: e.descricao, dia: e.dia, inicio: e.inicio, fim: e.fim } });
   }
 
   function campo<K extends keyof Rascunho>(k: K, v: Rascunho[K]) {
     setPainel(p => (p ? { ...p, dados: { ...p.dados, [k]: v } } : p));
+  }
+
+  function mudarParticipantes(f: (ps: string[]) => string[]) {
+    setPainel(p => (p ? { ...p, dados: { ...p.dados, participantes: f(p.dados.participantes) } } : p));
+  }
+  const setParticipante = (i: number, v: string) => mudarParticipantes(ps => ps.map((x, j) => (j === i ? v : x)));
+  const removerParticipante = (i: number) => mudarParticipantes(ps => ps.filter((_, j) => j !== i));
+  function adicionarParticipante() {
+    setFocarNovo(true);
+    mudarParticipantes(ps => [...ps, '']);
   }
 
   async function salvar(ev: React.FormEvent) {
@@ -258,7 +269,7 @@ export default function Agenda() {
                       <span className="ag-ev-hora">{e.inicio}–{e.fim}</span>
                       <span className="ag-ev-titulo">{e.titulo}</span>
                     </span>
-                    {alt >= 56 && e.participantes && <span className="ag-ev-part">{e.participantes}</span>}
+                    {alt >= 56 && e.participantes.length > 0 && <span className="ag-ev-part">{e.participantes.join(', ')}</span>}
                   </button>
                 );
               })}
@@ -285,10 +296,27 @@ export default function Agenda() {
               <input className="vc-input" value={painel.dados.titulo} maxLength={TITULO_MAX} autoFocus={!painel.evento}
                 onChange={e => campo('titulo', e.target.value)} placeholder="Ex.: Coleta com pacientes" />
             </label>
+            <fieldset className="ag-part">
+              <legend className="vc-label">Participantes</legend>
+              {painel.dados.participantes.map((p, i) => (
+                <div key={i} className="ag-part-linha">
+                  <input className="vc-input" value={p} maxLength={PARTICIPANTE_MAX} placeholder={`Participante ${i + 1}`}
+                    aria-label={`Participante ${i + 1}`} onChange={e => setParticipante(i, e.target.value)}
+                    autoFocus={focarNovo && i === painel.dados.participantes.length - 1} />
+                  <button type="button" className="vc-btn vc-btn--sm ag-eu" onClick={() => setParticipante(i, usuario)}
+                    aria-label={`Preencher participante ${i + 1} com ${usuario}`}>Eu</button>
+                  <button type="button" className="vc-btn vc-btn--sm vc-btn--ghost ag-remover" onClick={() => removerParticipante(i)}
+                    aria-label={`Remover participante ${i + 1}`}>×</button>
+                </div>
+              ))}
+              {painel.dados.participantes.length < PARTICIPANTES_QTD_MAX && (
+                <button type="button" className="vc-btn vc-btn--sm ag-add" onClick={adicionarParticipante}>+ Participante</button>
+              )}
+            </fieldset>
             <label className="vc-field">
-              <span className="vc-label">Participantes</span>
-              <textarea className="vc-input ag-textarea" value={painel.dados.participantes} maxLength={PARTICIPANTES_MAX} rows={3}
-                onChange={e => campo('participantes', e.target.value)} placeholder="Quem vai participar" />
+              <span className="vc-label">Descrição <span className="ag-opc">(opcional)</span></span>
+              <textarea className="vc-input ag-textarea" value={painel.dados.descricao} maxLength={DESCRICAO_MAX} rows={3}
+                onChange={e => campo('descricao', e.target.value)} placeholder="Algo que os participantes precisam saber" />
             </label>
             <label className="vc-field">
               <span className="vc-label">Dia *</span>

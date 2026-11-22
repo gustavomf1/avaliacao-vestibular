@@ -23,7 +23,7 @@ type Linha = DadosEvento & {
 };
 
 const SELECT = `
-  select e.id, e.titulo, e.participantes,
+  select e.id, e.titulo, e.participantes, e.descricao,
          to_char(e.dia, 'YYYY-MM-DD') as dia,
          to_char(e.inicio, 'HH24:MI') as inicio,
          to_char(e.fim, 'HH24:MI') as fim,
@@ -39,6 +39,7 @@ function formatar(l: Linha): Evento {
     id: l.id,
     titulo: l.titulo,
     participantes: l.participantes,
+    descricao: l.descricao,
     dia: l.dia,
     inicio: l.inicio,
     fim: l.fim,
@@ -61,19 +62,19 @@ export async function buscarEvento(id: string): Promise<Evento | null> {
 
 export async function criarEvento(d: DadosEvento, autorId: number): Promise<Evento> {
   const { rows } = await db().query<{ id: string }>(
-    `insert into eventos (autor_id, titulo, participantes, dia, inicio, fim)
-     values ($1, $2, $3, $4, $5, $6) returning id`,
-    [autorId, d.titulo, d.participantes, d.dia, d.inicio, d.fim]
+    `insert into eventos (autor_id, titulo, participantes, descricao, dia, inicio, fim)
+     values ($1, $2, $3, $4, $5, $6, $7) returning id`,
+    [autorId, d.titulo, d.participantes, d.descricao, d.dia, d.inicio, d.fim]
   );
   return (await buscarEvento(rows[0].id))!;
 }
 
 export async function atualizarEvento(id: string, d: DadosEvento, editorId: number): Promise<Evento | null> {
   const r = await db().query(
-    `update eventos set titulo = $2, participantes = $3, dia = $4, inicio = $5, fim = $6,
-       atualizado_em = now(), atualizado_por = $7
+    `update eventos set titulo = $2, participantes = $3, descricao = $4, dia = $5, inicio = $6, fim = $7,
+       atualizado_em = now(), atualizado_por = $8
      where id = $1`,
-    [id, d.titulo, d.participantes, d.dia, d.inicio, d.fim, editorId]
+    [id, d.titulo, d.participantes, d.descricao, d.dia, d.inicio, d.fim, editorId]
   );
   return r.rowCount ? buscarEvento(id) : null;
 }
